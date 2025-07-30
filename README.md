@@ -15,18 +15,19 @@ HazMap is a comprehensive React Native application that provides real-time envir
 - Real-time Google Maps integration
 - Dynamic hazard overlay visualization
 - Location-based services and geocoding
-- Custom map styling for optimal user experience
+- Map styling for optimal user experience
 
 ### 🌬️ **Air Quality Monitoring**
 - Real-time air quality data visualization
-- Historical air quality trends
-- Location-specific air quality alerts
-- Interactive charts and graphs
+- Pollutant concentration breakdown
+- Information regarding each pollutant to educate user
+- Location-specific air quality 
+- Animation based on air quality
 
 ### 🔥 **Wildfire Risk Assessment**
-- Advanced wildfire prediction algorithms
+- Advanced wildfire prediction
 - Real-time risk level monitoring
-- Historical wildfire data analysis
+- Satellite data analysis
 - Background task monitoring for continuous updates
 
 ### 🚨 **Emergency Evacuation**
@@ -37,9 +38,7 @@ HazMap is a comprehensive React Native application that provides real-time envir
 
 ### 📊 **Environmental Data**
 - Comprehensive environmental monitoring
-- Data visualization and analytics
-- Historical trend analysis
-- Export capabilities for reporting
+- Satellite data for vegetation cover
 
 ### 👤 **User Management**
 - Secure authentication with Supabase
@@ -52,17 +51,15 @@ HazMap is a comprehensive React Native application that provides real-time envir
 - **Frontend**: React Native 0.79.5, Expo 53.0.20
 - **Language**: TypeScript 5.8.3
 - **Maps**: Google Maps API, React Native Maps
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Database**: PostgreSQL
 - **UI Components**: React Native Paper, Lucide Icons
 - **Animations**: Lottie React Native
 - **Background Tasks**: Expo Background Fetch
 - **Location Services**: Expo Location
 - **State Management**: React Context API
+   - **APIs Used**: Google Maps Platform Weather API, Google Maps Platform Elevation API, Google Maps Platform AirQuality API, Google Earth Engine API
 
-## 📱 Screenshots
 
-*[Screenshots would be added here]*
 
 ## 🚀 Quick Start
 
@@ -71,7 +68,7 @@ HazMap is a comprehensive React Native application that provides real-time envir
 - Node.js (v18 or higher)
 - npm or yarn
 - Expo CLI (`npm install -g @expo/cli`)
-- iOS Simulator (for iOS development) or Android Studio (for Android development)
+- Android Studio (for Android development)
 
 ### Installation
 
@@ -114,8 +111,7 @@ HazMap is a comprehensive React Native application that provides real-time envir
    ```
 
 6. **Run on your device**
-   - Scan the QR code with Expo Go app (iOS/Android)
-   - Press `i` for iOS simulator
+   - Scan the QR code with Expo Go app (Android)
    - Press `a` for Android emulator
 
 ## 🔧 Configuration
@@ -174,7 +170,6 @@ hazmap/
 npm run dev          # Start development server
 npm run start        # Start Expo development server
 npm run android      # Run on Android
-npm run ios          # Run on iOS
 npm run build:web    # Build for web
 npm run lint         # Run ESLint
 ```
@@ -185,7 +180,7 @@ This project uses:
 - TypeScript for type safety
 - ESLint for code linting
 - Prettier for code formatting
-- React Native best practices
+- React Native for cross platform development
 
 ## 🤝 Contributing
 
@@ -216,14 +211,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Supabase](https://supabase.com/) for the backend services
 - [Google Maps Platform](https://developers.google.com/maps) for mapping services
 
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-- Create an [issue](https://github.com/yourusername/hazmap/issues)
-- Check the [documentation](docs/)
-- Join our [Discord community](https://discord.gg/hazmap)
-
----
 
 **Made with ❤️ for safer communities**
