@@ -200,9 +200,6 @@ We welcome contributions! Please follow these steps:
 - Update documentation as needed
 - Follow the existing code style
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
