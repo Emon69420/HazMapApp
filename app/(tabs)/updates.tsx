@@ -6,11 +6,13 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   Platform,
   Alert,
+  FlatList,
+  ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native';
-import { MessageSquare, Plus, MapPin, Clock, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, User, Send } from 'lucide-react-native';
+import { MessageSquare, MapPin, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, User, Flame, Shield, Info } from 'lucide-react-native';
 
 interface Update {
   id: string;
@@ -29,17 +31,14 @@ interface Update {
 
 export default function UpdatesScreen() {
   const [updates, setUpdates] = useState<Update[]>([]);
+  const [selectedTab, setSelectedTab] = useState<'prevention' | 'updates'>('prevention');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isComposing, setIsComposing] = useState(false);
-  const [newUpdate, setNewUpdate] = useState({
-    content: '',
-    category: 'safety' as Update['category'],
-    location: '',
-  });
 
   useEffect(() => {
-    loadUpdates();
-  }, []);
+    if (selectedTab === 'updates') {
+      loadUpdates();
+    }
+  }, [selectedTab]);
 
   const loadUpdates = async () => {
     // Simulate API call to get community updates
@@ -133,34 +132,6 @@ export default function UpdatesScreen() {
     }
   };
 
-  const handleSubmitUpdate = () => {
-    if (!newUpdate.content.trim()) {
-      Alert.alert('Error', 'Please enter update content');
-      return;
-    }
-
-    const update: Update = {
-      id: Date.now().toString(),
-      author: 'You',
-      role: 'citizen',
-      content: newUpdate.content,
-      location: newUpdate.location || 'Your Location',
-      latitude: 34.0522,
-      longitude: -118.2437,
-      timestamp: new Date().toISOString(),
-      verified: false,
-      category: newUpdate.category,
-      likes: 0,
-      reports: 0,
-    };
-
-    setUpdates(prev => [update, ...prev]);
-    setNewUpdate({ content: '', category: 'safety', location: '' });
-    setIsComposing(false);
-    
-    Alert.alert('Success', 'Your update has been posted and is pending verification.');
-  };
-
   const filteredUpdates = selectedCategory === 'all' 
     ? updates 
     : updates.filter(update => update.category === selectedCategory);
@@ -178,18 +149,117 @@ export default function UpdatesScreen() {
     return `${diffDays}d ago`;
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Community Updates</Text>
-        <TouchableOpacity
-          style={styles.composeButton}
-          onPress={() => setIsComposing(true)}
-        >
-          <Plus size={20} color="#FFFFFF" />
-        </TouchableOpacity>
+  const renderPreventionContent = () => (
+    <ScrollView style={styles.contentArea} showsVerticalScrollIndicator={false}>
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Flame size={24} color="#FF6B35" />
+          <Text style={styles.sectionTitle}>Preventing Wildfires</Text>
+        </View>
+        
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Home Safety</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Clear leaves and debris from gutters and roof</Text>
+            <Text style={styles.infoItem}>• Remove dead vegetation within 30 feet of your home</Text>
+            <Text style={styles.infoItem}>• Keep grass cut to 4 inches or less</Text>
+            <Text style={styles.infoItem}>• Store firewood at least 30 feet from your house</Text>
+            <Text style={styles.infoItem}>• Use fire-resistant building materials</Text>
+            <Text style={styles.infoItem}>• Install ember-resistant vents</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Outdoor Activities</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Never leave campfires unattended</Text>
+            <Text style={styles.infoItem}>• Extinguish fires completely with water</Text>
+            <Text style={styles.infoItem}>• Don't use fireworks in dry conditions</Text>
+            <Text style={styles.infoItem}>• Avoid parking on dry grass</Text>
+            <Text style={styles.infoItem}>• Check for fire restrictions before outdoor activities</Text>
+            <Text style={styles.infoItem}>• Report suspicious smoke immediately</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Vehicle Safety</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Maintain your vehicle to prevent sparks</Text>
+            <Text style={styles.infoItem}>• Don't drive over dry grass</Text>
+            <Text style={styles.infoItem}>• Secure trailer chains to prevent dragging</Text>
+            <Text style={styles.infoItem}>• Check tire pressure regularly</Text>
+            <Text style={styles.infoItem}>• Never throw cigarettes from vehicles</Text>
+          </View>
+        </View>
       </View>
 
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Shield size={24} color="#22C55E" />
+          <Text style={styles.sectionTitle}>What to Do During a Wildfire</Text>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>If You're at Home</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Stay informed with local emergency alerts</Text>
+            <Text style={styles.infoItem}>• Close all windows and doors</Text>
+            <Text style={styles.infoItem}>• Turn off air conditioning and fans</Text>
+            <Text style={styles.infoItem}>• Fill bathtubs and sinks with water</Text>
+            <Text style={styles.infoItem}>• Move flammable items away from windows</Text>
+            <Text style={styles.infoItem}>• Have your emergency kit ready</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>If You Need to Evacuate</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Follow evacuation orders immediately</Text>
+            <Text style={styles.infoItem}>• Take your emergency kit and important documents</Text>
+            <Text style={styles.infoItem}>• Wear protective clothing (long sleeves, pants)</Text>
+            <Text style={styles.infoItem}>• Cover your nose and mouth with a wet cloth</Text>
+            <Text style={styles.infoItem}>• Know your evacuation route in advance</Text>
+            <Text style={styles.infoItem}>• Don't return until authorities say it's safe</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Emergency Kit Essentials</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• Water (1 gallon per person per day)</Text>
+            <Text style={styles.infoItem}>• Non-perishable food for 3 days</Text>
+            <Text style={styles.infoItem}>• First aid kit and medications</Text>
+            <Text style={styles.infoItem}>• Flashlight and extra batteries</Text>
+            <Text style={styles.infoItem}>• Important documents (ID, insurance)</Text>
+            <Text style={styles.infoItem}>• Cash and credit cards</Text>
+            <Text style={styles.infoItem}>• Phone charger and backup battery</Text>
+            <Text style={styles.infoItem}>• Pet supplies if applicable</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Info size={24} color="#3B82F6" />
+          <Text style={styles.sectionTitle}>Important Contacts</Text>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Emergency Numbers</Text>
+          <View style={styles.infoList}>
+            <Text style={styles.infoItem}>• 911 - Emergency Services</Text>
+            <Text style={styles.infoItem}>• Local Fire Department</Text>
+            <Text style={styles.infoItem}>• County Emergency Management</Text>
+            <Text style={styles.infoItem}>• Red Cross Disaster Relief</Text>
+            <Text style={styles.infoItem}>• FEMA Disaster Assistance</Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+  const renderUpdatesContent = () => (
+    <>
       <ScrollView 
         horizontal 
         style={styles.categorySelector}
@@ -223,76 +293,12 @@ export default function UpdatesScreen() {
         })}
       </ScrollView>
 
-      {isComposing && (
-        <View style={styles.composeCard}>
-          <Text style={styles.composeTitle}>Post Update</Text>
-          
-          <View style={styles.categoryPicker}>
-            <Text style={styles.fieldLabel}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {categories.slice(1).map((category) => (
-                <TouchableOpacity
-                  key={category.key}
-                  style={[
-                    styles.categoryChip,
-                    newUpdate.category === category.key && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setNewUpdate(prev => ({ ...prev, category: category.key as Update['category'] }))}
-                >
-                  <Text
-                    style={[
-                      styles.categoryChipText,
-                      newUpdate.category === category.key && styles.categoryChipTextActive,
-                    ]}
-                  >
-                    {category.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Location (Optional)</Text>
-            <TextInput
-              style={styles.locationInput}
-              value={newUpdate.location}
-              onChangeText={(text) => setNewUpdate(prev => ({ ...prev, location: text }))}
-              placeholder="Enter location..."
-              placeholderTextColor="#666"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.fieldLabel}>Update Content</Text>
-            <TextInput
-              style={styles.contentInput}
-              value={newUpdate.content}
-              onChangeText={(text) => setNewUpdate(prev => ({ ...prev, content: text }))}
-              placeholder="What's happening in your area? Be specific and factual..."
-              placeholderTextColor="#666"
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
-          <View style={styles.composeActions}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setIsComposing(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmitUpdate}
-            >
-              <Send size={16} color="#FFFFFF" />
-              <Text style={styles.submitButtonText}>Post Update</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
+      <View style={styles.dummyDataNote}>
+        <Info size={16} color="#FF6B35" />
+        <Text style={styles.dummyDataText}>
+          This is dummy data to show how the UI would look. As the app grows, we will make this a working feature.
+        </Text>
+      </View>
 
       <ScrollView style={styles.updatesList} showsVerticalScrollIndicator={false}>
         {filteredUpdates.map((update) => (
@@ -305,7 +311,7 @@ export default function UpdatesScreen() {
                 <View style={styles.authorDetails}>
                   <View style={styles.authorNameRow}>
                     <Text style={styles.authorName}>{update.author}</Text>
-                    {update.verified && (
+                    {update.verified && update.role !== 'responder' && (
                       <CheckCircle size={16} color="#22C55E" />
                     )}
                   </View>
@@ -333,27 +339,82 @@ export default function UpdatesScreen() {
               )}
             </View>
 
-            <View style={styles.updateActions}>
-              <TouchableOpacity style={styles.actionItem}>
-                <Text style={styles.actionCount}>{update.likes}</Text>
-                <Text style={styles.actionLabel}>Helpful</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionItem}>
-                <MapPin size={16} color="#666" />
-                <Text style={styles.actionLabel}>View on Map</Text>
-              </TouchableOpacity>
-
-              {update.reports > 0 && (
+            {update.reports > 0 && (
+              <View style={styles.updateActions}>
                 <TouchableOpacity style={styles.actionItem}>
                   <AlertTriangle size={16} color="#EAB308" />
                   <Text style={styles.actionLabel}>{update.reports} reports</Text>
                 </TouchableOpacity>
-              )}
-            </View>
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>
+    </>
+  );
+
+
+  useEffect(() => {
+    if (selectedTab === 'updates') {
+      loadUpdates();
+    }
+  }, [selectedTab]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Community Updates</Text>
+      </View>
+
+      <View style={styles.tabSelector}>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            selectedTab === 'prevention' && styles.tabButtonActive,
+          ]}
+          onPress={() => setSelectedTab('prevention')}
+        >
+          <Shield size={16} color={selectedTab === 'prevention' ? '#FFFFFF' : '#666'} />
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === 'prevention' && styles.tabTextActive,
+            ]}
+          >
+            Prevention
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            selectedTab === 'updates' && styles.tabButtonActive,
+          ]}
+          onPress={() => setSelectedTab('updates')}
+        >
+          <MessageSquare size={16} color={selectedTab === 'updates' ? '#FFFFFF' : '#666'} />
+          <Text
+            style={[
+              styles.tabText,
+              selectedTab === 'updates' && styles.tabTextActive,
+            ]}
+          >
+            Updates
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {selectedTab === 'prevention' ? (
+        renderPreventionContent()
+      ) : (
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          {renderUpdatesContent()}
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }
@@ -362,6 +423,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0F0F0F',
+    paddingTop: 30,
   },
   header: {
     flexDirection: 'row',
@@ -375,13 +437,76 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  composeButton: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+  tabSelector: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    gap: 8,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+    gap: 8,
     justifyContent: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
+  },
+  tabText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+  contentArea: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  infoCard: {
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  infoList: {
+    gap: 8,
+  },
+  infoItem: {
+    fontSize: 14,
+    color: '#CCCCCC',
+    lineHeight: 20,
   },
   categorySelector: {
     paddingHorizontal: 20,
@@ -411,102 +536,6 @@ const styles = StyleSheet.create({
   },
   categoryTextActive: {
     color: '#FFFFFF',
-  },
-  composeCard: {
-    backgroundColor: '#1A1A1A',
-    margin: 20,
-    marginTop: 0,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  composeTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 16,
-  },
-  categoryPicker: {
-    marginBottom: 16,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  categoryChip: {
-    backgroundColor: '#2A2A2A',
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginRight: 8,
-  },
-  categoryChipActive: {
-    backgroundColor: '#FF6B35',
-  },
-  categoryChipText: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  categoryChipTextActive: {
-    color: '#FFFFFF',
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  locationInput: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  contentInput: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: '#FFFFFF',
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  composeActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#2A2A2A',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  submitButton: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#FF6B35',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
   },
   updatesList: {
     flex: 1,
@@ -616,5 +645,23 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 12,
     color: '#666',
+  },
+  dummyDataNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 8,
+    padding: 12,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+    gap: 8,
+  },
+  dummyDataText: {
+    fontSize: 12,
+    color: '#CCCCCC',
+    flex: 1,
+    lineHeight: 16,
   },
 });

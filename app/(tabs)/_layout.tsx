@@ -6,8 +6,25 @@ import {
   MessageSquare, 
   User 
 } from 'lucide-react-native';
+import { useAuthContext } from '../../contexts/AuthContext';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 export default function TabLayout() {
+  const { user, loading } = useAuthContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/(auth)/login');
+    }
+  }, [user, loading, router]);
+
+  if (!user && !loading) {
+    // Optionally render nothing while redirecting
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{

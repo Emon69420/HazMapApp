@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,15 @@ import {
   Alert,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Shield, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Flame, Eye, EyeOff } from 'lucide-react-native';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { signIn } = useAuthContext();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -25,11 +28,17 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await signIn(email, password);
+      if (error) throw error;
+      // User is signed in and session is persisted by supabase-js
       router.replace('/(tabs)');
-    }, 1000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      Alert.alert('Sign In Error', errorMsg || 'An error occurred during sign in.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,11 +50,9 @@ export default function LoginScreen() {
         <View style={styles.content}>
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Shield size={48} color="#FF6B35" />
-              <AlertTriangle size={32} color="#FFD23F" style={styles.alertIcon} />
+              <Flame size={48} color="#FF6B35" />
             </View>
-            <Text style={styles.title}>WildSafe</Text>
-            <Text style={styles.subtitle}>Emergency Response System</Text>
+            <Text style={styles.title}>HazMap</Text>
           </View>
 
           <View style={styles.form}>
@@ -61,14 +68,26 @@ export default function LoginScreen() {
             />
 
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              placeholderTextColor="#666"
-              secureTextEntry
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                placeholderTextColor="#666"
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(p => !p)}
+                style={styles.passwordToggle}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity
               style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -148,6 +167,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
     marginBottom: 24,
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    backgroundColor: '#1A1A1A',
+    borderColor: '#333',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    paddingRight: 50,
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 24,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
   },
   button: {
     backgroundColor: '#FF6B35',

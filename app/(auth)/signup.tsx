@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,36 +12,40 @@ import {
   ScrollView,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { Shield, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Flame, Eye, EyeOff } from 'lucide-react-native';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 export default function SignUpScreen() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
-    confirmPassword: '',
     role: 'citizen', // citizen, official, responder
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { signUp } = useAuthContext();
 
   const handleSignUp = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (!formData.name || !formData.email || !formData.password) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
-
-    if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
-    }
-
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await signUp(formData.email, formData.password, {
+        name: formData.name,
+        role: formData.role,
+      });
+      if (error) throw error;
+      // User is signed up and session is persisted by supabase-js
       router.replace('/(tabs)');
-    }, 1000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      Alert.alert('Sign Up Error', errorMsg || 'An error occurred during sign up.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateFormData = (field: string, value: string) => {
@@ -54,83 +58,74 @@ export default function SignUpScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <View style={styles.iconContainer}>
-                <Shield size={48} color="#FF6B35" />
-                <AlertTriangle size={32} color="#FFD23F" style={styles.alertIcon} />
-              </View>
-              <Text style={styles.title}>Join WildSafe</Text>
-              <Text style={styles.subtitle}>Create your emergency response account</Text>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <Flame size={48} color="#FF6B35" />
             </View>
+            <Text style={styles.title}>HazMap</Text>
+          </View>
 
-            <View style={styles.form}>
-              <Text style={styles.label}>First Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.firstName}
-                onChangeText={(value) => updateFormData('firstName', value)}
-                placeholder="Enter your first name"
-                placeholderTextColor="#666"
-              />
+          <View style={styles.form}>
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={text => updateFormData('name', text)}
+              placeholder="Enter your name"
+              placeholderTextColor="#666"
+              autoCapitalize="words"
+            />
 
-              <Text style={styles.label}>Last Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.lastName}
-                onChangeText={(value) => updateFormData('lastName', value)}
-                placeholder="Enter your last name"
-                placeholderTextColor="#666"
-              />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.email}
+              onChangeText={text => updateFormData('email', text)}
+              placeholder="Enter your email"
+              placeholderTextColor="#666"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
 
-              <Text style={styles.label}>Email *</Text>
+                        <Text style={styles.label}>Password</Text>
+            <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.input}
-                value={formData.email}
-                onChangeText={(value) => updateFormData('email', value)}
-                placeholder="Enter your email"
-                placeholderTextColor="#666"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              <Text style={styles.label}>Password *</Text>
-              <TextInput
-                style={styles.input}
+                style={styles.passwordInput}
                 value={formData.password}
-                onChangeText={(value) => updateFormData('password', value)}
-                placeholder="Create a password"
+                onChangeText={text => updateFormData('password', text)}
+                placeholder="Enter your password"
                 placeholderTextColor="#666"
-                secureTextEntry
+                secureTextEntry={!showPassword}
               />
-
-              <Text style={styles.label}>Confirm Password *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.confirmPassword}
-                onChangeText={(value) => updateFormData('confirmPassword', value)}
-                placeholder="Confirm your password"
-                placeholderTextColor="#666"
-                secureTextEntry
-              />
-
               <TouchableOpacity
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={handleSignUp}
-                disabled={isLoading}
+                onPress={() => setShowPassword(p => !p)}
+                style={styles.passwordToggle}
               >
-                <Text style={styles.buttonText}>
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Text>
+                {showPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
               </TouchableOpacity>
+            </View>
+            
 
-              <View style={styles.linkContainer}>
-                <Text style={styles.linkText}>Already have an account? </Text>
-                <Link href="/(auth)/login" style={styles.link}>
-                  <Text style={styles.linkHighlight}>Sign In</Text>
-                </Link>
-              </View>
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleSignUp}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Signing Up...' : 'Sign Up'}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.linkContainer}>
+              <Text style={styles.linkText}>Already have an account? </Text>
+              <Link href="/(auth)/login" style={styles.link}>
+                <Text style={styles.linkHighlight}>Sign In</Text>
+              </Link>
             </View>
           </View>
         </ScrollView>
@@ -147,16 +142,14 @@ const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   content: {
+    flexGrow: 1,
     padding: 24,
-    paddingTop: 48,
+    justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 48,
   },
   iconContainer: {
     position: 'relative',
@@ -195,7 +188,27 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: '#FFFFFF',
-    marginBottom: 20,
+    marginBottom: 24,
+  },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordInput: {
+    backgroundColor: '#1A1A1A',
+    borderColor: '#333',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    paddingRight: 50,
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 24,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
   },
   button: {
     backgroundColor: '#FF6B35',
@@ -203,7 +216,6 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginBottom: 24,
-    marginTop: 8,
   },
   buttonDisabled: {
     opacity: 0.6,

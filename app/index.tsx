@@ -1,15 +1,18 @@
-import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { Redirect } from 'expo-router';
+import { useAuthContext } from '../contexts/AuthContext';
+import LoadingScreen from '../components/LoadingScreen';
 
 export default function App() {
-  useEffect(() => {
-    // Simple timeout to ensure router is ready
-    const timeout = setTimeout(() => {
-      router.replace('/(auth)/login');
-    }, 100);
+  const { session, loading } = useAuthContext();
 
-    return () => clearTimeout(timeout);
-  }, []);
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
-  return null;
+  // Redirect based on authentication state
+  if (session) {
+    return <Redirect href="/(tabs)" />;
+  } else {
+    return <Redirect href="/(auth)/login" />;
+  }
 }
